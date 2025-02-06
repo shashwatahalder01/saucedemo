@@ -36,3 +36,52 @@ test("Verify the price order (high-low) displayed on the “All Items” page.",
   const sortedProductPrices = productPrices.sort((a, b) => b - a);
   expect(productPrices).toEqual(sortedProductPrices);
 });
+
+test("Add multiple items to the cart and validate the checkout journey", async ({
+  page,
+}) => {
+  await test.step("Add multiple items to the cart", async () => {
+    for (const product of testData.products) {
+      await page
+        .locator(
+          `[data-test="add-to-cart-${product
+            .toLowerCase()
+            .replaceAll(" ", "-")}"]`
+        )
+        .click();
+    }
+
+    await page.locator('[data-test="shopping-cart-link"]').click();
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page).toHaveURL(/cart\.html/);
+    for (const product of testData.products) {
+      await expect(page.locator(`text="${product}"`)).toBeVisible();
+    }
+  });
+
+  await test.step("Provide user information and complete the checkout", async () => {
+    await page.locator('[data-test="checkout"]').click();
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page).toHaveURL(/checkout-step-one\.html/);
+    await page
+      .locator('[data-test="firstName"]')
+      .fill(testData.userInfo.firstName);
+    await page
+      .locator('[data-test="lastName"]')
+      .fill(testData.userInfo.lastName);
+    await page
+      .locator('[data-test="postalCode"]')
+      .fill(testData.userInfo.postalCode);
+
+    await page.locator('[data-test="continue"]').click();
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page).toHaveURL(/checkout-step-two\.html/);
+
+    await page.locator('[data-test="finish"]').click();
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page).toHaveURL(/checkout-complete\.html/);
+    await expect(page.locator('[data-test="complete-header"]')).toContainText(
+      "Thank you for your order!"
+    );
+  });
+});

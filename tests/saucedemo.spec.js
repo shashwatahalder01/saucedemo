@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import { testData } from "../test-data/test-data";
 
 test.beforeEach(async ({ page }) => {
@@ -13,7 +14,7 @@ test.beforeEach(async ({ page }) => {
 
 test("Verify the sorting order displayed for Z-A on the “All Items” page", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.locator('[data-test="product-sort-container"]').selectOption("za");
   const productNames = await page
     .locator('[data-test="inventory-item-name"]')
@@ -27,11 +28,14 @@ test("Verify the sorting order displayed for Z-A on the “All Items” page", a
     maskColor: "black",
     animations: "disabled",
   });
+
+  // run accessibility scan
+  await runAccessibilityScan(page, testInfo, "inventory-page");
 });
 
 test("Verify the price order (high-low) displayed on the “All Items” page.", async ({
   page,
-}) => {
+}, testInfo) => {
   await page
     .locator('[data-test="product-sort-container"]')
     .selectOption("hilo");
@@ -47,11 +51,14 @@ test("Verify the price order (high-low) displayed on the “All Items” page.",
     maskColor: "black",
     animations: "disabled",
   });
+
+  // run accessibility scan
+  await runAccessibilityScan(page, testInfo, "inventory-page");
 });
 
 test("Add multiple items to the cart and validate the checkout journey", async ({
   page,
-}) => {
+}, testInfo) => {
   await test.step("Add multiple items to the cart", async () => {
     for (const product of testData.products) {
       await page
@@ -73,6 +80,9 @@ test("Add multiple items to the cart and validate the checkout journey", async (
       fullPage: true,
       animations: "disabled",
     });
+
+    // run accessibility scan
+    await runAccessibilityScan(page, testInfo, "cart-page");
   });
 
   await test.step("Provide user information and complete the checkout", async () => {
@@ -83,6 +93,9 @@ test("Add multiple items to the cart and validate the checkout journey", async (
       fullPage: true,
       animations: "disabled",
     });
+
+    // run accessibility scan
+    await runAccessibilityScan(page, testInfo, "checkout-step1-page");
 
     await page
       .locator('[data-test="firstName"]')
@@ -102,6 +115,9 @@ test("Add multiple items to the cart and validate the checkout journey", async (
       animations: "disabled",
     });
 
+    // run accessibility scan
+    await runAccessibilityScan(page, testInfo, "checkout-step2-page");
+
     await page.locator('[data-test="finish"]').click();
     await page.waitForLoadState("domcontentloaded");
     await expect(page).toHaveURL(/checkout-complete\.html/);
@@ -112,5 +128,32 @@ test("Add multiple items to the cart and validate the checkout journey", async (
       fullPage: true,
       animations: "disabled",
     });
+
+    // run accessibility scan
+    await runAccessibilityScan(page, testInfo, "checkout-complete-page");
   });
 });
+
+// Utility function for accessibility scan
+async function runAccessibilityScan(page, testInfo, attachmentName = "") {
+  const accessibilityScanResults = await new AxeBuilder({ page })
+    // .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .withTags(["wcag2a", "wcag2aa"])
+    .analyze();
+
+  await testInfo.attach(`accessibility-scan-results-${attachmentName}`, {
+    body: JSON.stringify(accessibilityScanResults, null, 2),
+    contentType: "application/json",
+  });
+
+  const criticalViolations = accessibilityScanResults.violations.filter(
+    (v) => v.impact === "critical"
+  );
+
+  /*
+  For the time being, we are just attaching the accessibility scan results.
+  Uncomment the below line to fail the test if critical violations are not allowed.
+  */
+
+  // expect(criticalViolations.length).toBe(0);
+}

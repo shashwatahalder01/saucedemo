@@ -48,6 +48,7 @@ npx playwright test tests/saucedemo.spec.ts
 ```
 
 ### Update Baseline Snapshots
+
 ```sh
 npx playwright test --update-snapshots
 ```
@@ -63,6 +64,13 @@ npx playwright show-report
 - [headless run](./test-recording/headed-run.mov)
 - [headed run](./test-recording/headed-run.mov)
 
+<p float="left">
+  <img src="./media/headless-run.gif" width="45%" style="margin-right: 5%;"/>
+  <img src="./media/headed-run.gif" width="45%" />
+</p>
+
 ## Test Execution Reports
 
-- [HTML Report](./playwright-report/index.html)
+- [Detailed HTML Report](https://shashwatahalder01.github.io/saucedemo)
+
+![report](./media/report-snapshort.png)

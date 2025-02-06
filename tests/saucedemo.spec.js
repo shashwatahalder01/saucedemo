@@ -22,3 +22,17 @@ test("Verify the sorting order displayed for Z-A on the “All Items” page", a
   const sortedProductNames = [...productNames].sort().reverse();
   expect(productNames).toEqual(sortedProductNames);
 });
+
+test("Verify the price order (high-low) displayed on the “All Items” page.", async ({
+  page,
+}) => {
+  await page
+    .locator('[data-test="product-sort-container"]')
+    .selectOption("hilo");
+  let productPrices = await page
+    .locator('[data-test="inventory-item-price"]')
+    .allTextContents();
+  productPrices = productPrices.map((price) => parseFloat(price.slice(1)));
+  const sortedProductPrices = productPrices.sort((a, b) => b - a);
+  expect(productPrices).toEqual(sortedProductPrices);
+});

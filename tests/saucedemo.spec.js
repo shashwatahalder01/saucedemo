@@ -21,6 +21,12 @@ test("Verify the sorting order displayed for Z-A on the “All Items” page", a
 
   const sortedProductNames = [...productNames].sort().reverse();
   expect(productNames).toEqual(sortedProductNames);
+  await expect(page).toHaveScreenshot({
+    fullPage: true,
+    mask: await page.locator('div[class="inventory_item_img"]').all(),
+    maskColor: "black",
+    animations: "disabled",
+  });
 });
 
 test("Verify the price order (high-low) displayed on the “All Items” page.", async ({
@@ -35,6 +41,12 @@ test("Verify the price order (high-low) displayed on the “All Items” page.",
   productPrices = productPrices.map((price) => parseFloat(price.slice(1)));
   const sortedProductPrices = productPrices.sort((a, b) => b - a);
   expect(productPrices).toEqual(sortedProductPrices);
+  await expect(page).toHaveScreenshot({
+    fullPage: true,
+    mask: await page.locator('div[class="inventory_item_img"]').all(),
+    maskColor: "black",
+    animations: "disabled",
+  });
 });
 
 test("Add multiple items to the cart and validate the checkout journey", async ({
@@ -57,12 +69,21 @@ test("Add multiple items to the cart and validate the checkout journey", async (
     for (const product of testData.products) {
       await expect(page.locator(`text="${product}"`)).toBeVisible();
     }
+    await expect(page).toHaveScreenshot({
+      fullPage: true,
+      animations: "disabled",
+    });
   });
 
   await test.step("Provide user information and complete the checkout", async () => {
     await page.locator('[data-test="checkout"]').click();
     await page.waitForLoadState("domcontentloaded");
     await expect(page).toHaveURL(/checkout-step-one\.html/);
+    await expect(page).toHaveScreenshot({
+      fullPage: true,
+      animations: "disabled",
+    });
+
     await page
       .locator('[data-test="firstName"]')
       .fill(testData.userInfo.firstName);
@@ -76,6 +97,10 @@ test("Add multiple items to the cart and validate the checkout journey", async (
     await page.locator('[data-test="continue"]').click();
     await page.waitForLoadState("domcontentloaded");
     await expect(page).toHaveURL(/checkout-step-two\.html/);
+    await expect(page).toHaveScreenshot({
+      fullPage: true,
+      animations: "disabled",
+    });
 
     await page.locator('[data-test="finish"]').click();
     await page.waitForLoadState("domcontentloaded");
@@ -83,5 +108,9 @@ test("Add multiple items to the cart and validate the checkout journey", async (
     await expect(page.locator('[data-test="complete-header"]')).toContainText(
       "Thank you for your order!"
     );
+    await expect(page).toHaveScreenshot({
+      fullPage: true,
+      animations: "disabled",
+    });
   });
 });

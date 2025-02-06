@@ -17,8 +17,8 @@ For detailed system requirements, please check the [Playwright System Requiremen
 Clone the repository:
 
 ```sh
-git clone <repository-url>
-cd <repository-folder>
+git clone https://github.com/shashwatahalder01/saucedemo.git
+cd saucedemo
 ```
 
 Install dependencies:

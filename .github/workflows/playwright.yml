@@ -20,6 +20,10 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+        # Update snapshots for ci, use docker container to have a consistent environment for visual tests
+      - name: Update Playwright snapshots
+        run: npx playwright test --update-snapshots
+
       - name: Run Playwright tests
         run: npx playwright test
 
